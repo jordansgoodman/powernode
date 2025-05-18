@@ -1,44 +1,48 @@
-# testing API calls
-
 import requests
 
 BASE_URL = "http://127.0.0.1:8000"
 WORKFLOW_NAME = "test_read_csv"
 
-r = requests.post(f"{BASE_URL}/workflow", json={"name": WORKFLOW_NAME})
-print("Workflow create:", r.status_code, r.json())
+requests.delete(f"{BASE_URL}/workflow/{WORKFLOW_NAME}")
 
-r = requests.post(f"{BASE_URL}/workflow/{WORKFLOW_NAME}/read_node", json={
-    "name": "read_sales",
-    "file_path": "testdataset/Sales.csv"
-})
-print("Add read_sales:", r.status_code, r.json())
+def safe_post(endpoint, payload):
+    resp = requests.post(f"{BASE_URL}{endpoint}", json=payload)
+    try:
+        return resp.status_code, resp.json()
+    except:
+        return resp.status_code, resp.text
 
-r = requests.post(f"{BASE_URL}/workflow/{WORKFLOW_NAME}/read_node", json={
-    "name": "read_features",
-    "file_path": "testdataset/Features.csv"
-})
-print("Add read_features:", r.status_code, r.json())
 
-r = requests.post(f"{BASE_URL}/workflow/{WORKFLOW_NAME}/read_node", json={
-    "name": "read_stores",
-    "file_path": "testdataset/Stores.csv"
-})
-print("Add read_stores:", r.status_code, r.json())
+code, msg = safe_post("/workflow", {"name": WORKFLOW_NAME})
+print("Create workflow:", code, msg)
 
-r = requests.post(f"{BASE_URL}/workflow/{WORKFLOW_NAME}/join_node", json={
+
+# todo: this should be handled better, via API
+for name, file in [
+    ("read_sales", "testdataset/Sales.csv"),
+    ("read_features", "testdataset/Features.csv"),
+    ("read_stores", "testdataset/Stores.csv")
+]:
+    code, msg = safe_post(f"/workflow/{WORKFLOW_NAME}/read_node", {
+        "name": name,
+        "file_path": file
+    })
+    print(f"Add node {name}:", code, msg)
+
+
+# todo: this should be handled better - via API
+code, msg = safe_post(f"/workflow/{WORKFLOW_NAME}/join_node", {
     "name": "join_sales_features",
     "left_table": "read_sales",
     "right_table": "read_features",
     "on": ["Store", "Date"],
     "how": "inner"
 })
-print("Add join_sales_features:", r.status_code, r.json())
+print("Add join node:", code, msg)
 
-r = requests.post(f"{BASE_URL}/workflow/{WORKFLOW_NAME}/run")
-print("Run workflow:", r.status_code, r.json())
+code, msg = safe_post(f"/workflow/{WORKFLOW_NAME}/run", {})
+print("Run workflow:", code, msg)
 
-r = requests.get(f"{BASE_URL}/workflow/{WORKFLOW_NAME}/nodes/join_sales_features/preview", params={"limit": 5})
-print("\nPreview join_sales_features:")
-for row in r.json():
-    print(row)
+preview = requests.get(f"{BASE_URL}/workflow/{WORKFLOW_NAME}/nodes/join_sales_features/preview", params={"limit": 5})
+print("\nPreview Output:")
+print(preview.json())

@@ -20,13 +20,13 @@ class Workflow:
         root_dir = os.path.abspath(os.path.join(script_dir, ".."))
         self.path = os.path.join(root_dir, "data", self.name)
 
-        # create the directory if it doesn't exist
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
+        # # create the directory if it doesn't exist
+        # if not os.path.exists(self.path):
+        #     os.makedirs(self.path)
         
-        if os.path.exists(self.path):
-            shutil.rmtree(self.path)
-        os.makedirs(self.path)
+        # if os.path.exists(self.path):
+        #     shutil.rmtree(self.path)
+        # os.makedirs(self.path)
 
         # state
         self.graph = {}
