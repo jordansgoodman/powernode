@@ -1,13 +1,13 @@
 import uuid 
 import os 
 import datetime
-import duckdb 
-
-from node import Node 
+from src.node import Node
+import shutil
 
 class Workflow:
 
     def __init__(self, name):
+
         # metadata
         self.name = name
         self.id = str(uuid.uuid4())
@@ -23,10 +23,10 @@ class Workflow:
         # create the directory if it doesn't exist
         if not os.path.exists(self.path):
             os.makedirs(self.path)
-
-        # initialize duckdb path inside this folder
-        self.db_path = os.path.join(self.path, f"{self.name}.db")
-        self.con = duckdb.connect(self.db_path)
+        
+        if os.path.exists(self.path):
+            shutil.rmtree(self.path)
+        os.makedirs(self.path)
 
         # state
         self.graph = {}
@@ -39,10 +39,8 @@ class Workflow:
             f"  Created: {self.created_at}\n"
             f"  Status: {self.status}\n"
             f"  Path: {self.path}\n"
-            f"  DB Path: {self.db_path}\n"
             f"  Nodes: {len(self.nodes)}"
         )
-
 
     def add_node(self, node_cls, name=None, **kwargs):
         index = len(self.nodes) + 1
@@ -50,3 +48,8 @@ class Workflow:
         node = node_cls(node_name, self.path, **kwargs)
         self.nodes.append(node)
         return node
+    
+    def clear_all_nodes(self):
+        for node in self.nodes:
+            node.delete()
+        self.nodes = []
