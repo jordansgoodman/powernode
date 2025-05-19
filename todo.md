@@ -2,5 +2,8 @@
 
 - setup environment (done)
 - test basic crud operations: API -> folder (done)
-- add more node operations - TBD on what to create next 
-- review current endpoints (what other operations can I add?)
+- add filter node
+- add filter endpoints
+- add group by node
+- add group by endpoints
+- add server jobs (cron schedule on fast API to run workflows)
