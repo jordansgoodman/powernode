@@ -6,7 +6,7 @@ import os
 import shutil
 import polars as pl
 from src.workflow import Workflow
-from src.node import ReadCSVNode, JoinNode
+from src.node import ReadCSVNode, JoinNode, FilterNode
 from fastapi.middleware.cors import CORSMiddleware
 import datetime 
 
@@ -18,7 +18,6 @@ data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"
 app.mount("/files", StaticFiles(directory=data_path), name="files")
 
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,7 +25,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 class CreateWorkflowRequest(BaseModel):
     name: str
@@ -42,6 +40,10 @@ class AddJoinNodeRequest(BaseModel):
     on: List[str]
     how: Optional[str] = "inner"
 
+class AddFilterNodeRequest(BaseModel):
+    name: str
+    input_table: str
+    filter_expr: str   # e.g. "pl.col('Revenue') > 1000"
 
 @app.get("/workflows")
 def list_workflows():
@@ -161,7 +163,6 @@ def preview_node(workflow_name: str, node_name: str, limit: int = 5):
     else:
         raise HTTPException(status_code=400, detail="Node output not previewable")
 
-# need to fix this: in memory vs disk
 @app.delete("/workflow/{workflow_name}")
 def delete_workflow(workflow_name: str):
     wf = workflows.pop(workflow_name, None)
@@ -210,3 +211,25 @@ def export_workflow(workflow_name: str):
             for n in wf.nodes
         ]
     }
+
+
+@app.post("/workflow/{workflow_name}/filter_node")
+def add_filter_node(workflow_name: str, req: AddFilterNodeRequest):
+    wf = workflows.get(workflow_name)
+    if not wf:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+
+    # turn the string into a polars.Expr
+    try:
+        expr = eval(req.filter_expr, {"pl": pl}, {})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid filter_expr: {e}")
+
+    # mirror the way you add ReadCSVNode/JoinNode
+    wf.add_node(
+        FilterNode,
+        name=req.name,
+        input_table=req.input_table,
+        filter_expr=expr
+    )
+    return {"message": f"FilterNode '{req.name}' added"}

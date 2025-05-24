@@ -1,6 +1,7 @@
-from workflow import Workflow
-from node import ReadCSVNode
-from node import JoinNode
+from src.workflow import Workflow
+from src.workflow import Workflow
+from src.node     import ReadCSVNode, JoinNode
+
 
 wf = Workflow(name="test_read_csv")
 

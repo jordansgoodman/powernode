@@ -89,3 +89,38 @@ class JoinNode(Node):
         except Exception as e:
             self.status = "failed"
             raise e
+
+
+class FilterNode(Node):
+    def __init__(self, name, workflow_path, input_table, filter_expr, table_name=None):
+        """
+        input_table: the name of an earlier node whose output you want to filter
+        filter_expr: a polars.Expr, e.g. pl.col("Quantity") > 10
+        """
+        super().__init__(name, workflow_path)
+        self.input_table = input_table
+        self.filter_expr = filter_expr
+        self.table_name = table_name or name
+
+    def _get_parquet_path(self, table_name):
+        
+        node_root = os.path.abspath(os.path.join(self.path, "..", table_name))
+        return os.path.join(node_root, f"{table_name}.parquet")
+
+    def run(self):
+        self.status = "running"
+        try:
+            
+            in_path = self._get_parquet_path(self.input_table)
+            lf = pl.read_parquet(in_path).lazy()
+
+    
+            filtered = lf.filter(self.filter_expr)
+
+            out_path = os.path.join(self.path, f"{self.table_name}.parquet")
+            filtered.sink_parquet(out_path, compression="zstd")
+            self.output = filtered
+            self.status = "completed"
+        except Exception as e:
+            self.status = "failed"
+            raise
