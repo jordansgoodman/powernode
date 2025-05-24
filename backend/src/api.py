@@ -9,6 +9,8 @@ from src.workflow import Workflow
 from src.node import ReadCSVNode, JoinNode, FilterNode
 from fastapi.middleware.cors import CORSMiddleware
 import datetime 
+from src.log import init_action_log, register_action
+
 
 app = FastAPI()
 
@@ -17,6 +19,7 @@ workflows: Dict[str, Workflow] = {}
 data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
 app.mount("/files", StaticFiles(directory=data_path), name="files")
 
+init_action_log()
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,6 +28,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 class CreateWorkflowRequest(BaseModel):
     name: str
@@ -99,6 +103,13 @@ def create_workflow(req: CreateWorkflowRequest):
 
     wf = Workflow(name=req.name)
     workflows[req.name] = wf
+
+    register_action(
+        action="create_workflow",
+        workflow=wf.name,
+        payload=req.dict()
+    )
+
     return {"message": f"Workflow '{req.name}' created"}
 
 @app.post("/workflow/{workflow_name}/read_node")
@@ -107,6 +118,12 @@ def add_read_node(workflow_name: str, req: AddReadNodeRequest):
     if not wf:
         raise HTTPException(status_code=404, detail="Workflow not found")
     wf.add_node(ReadCSVNode, name=req.name, file_path=req.file_path)
+
+    register_action(
+        action="add_read_node",
+        workflow=workflow_name,
+        payload=req.dict()
+    )
     return {"message": f"ReadCSVNode '{req.name}' added"}
 
 @app.post("/workflow/{workflow_name}/join_node")
