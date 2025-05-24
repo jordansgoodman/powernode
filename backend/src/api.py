@@ -155,7 +155,7 @@ def preview_node(workflow_name: str, node_name: str, limit: int = 5):
     if not node:
         raise HTTPException(status_code=404, detail="Node not found")
 
-    if hasattr(node.output, "fetch"):  # LazyFrame
+    if hasattr(node.output, "fetch"):
         return node.output.fetch(limit).to_dicts()
     elif isinstance(node.output, str) and node.output.endswith(".parquet"):
         df = pl.read_parquet(node.output)
@@ -219,13 +219,10 @@ def add_filter_node(workflow_name: str, req: AddFilterNodeRequest):
     if not wf:
         raise HTTPException(status_code=404, detail="Workflow not found")
 
-    # turn the string into a polars.Expr
     try:
         expr = eval(req.filter_expr, {"pl": pl}, {})
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid filter_expr: {e}")
-
-    # mirror the way you add ReadCSVNode/JoinNode
     wf.add_node(
         FilterNode,
         name=req.name,

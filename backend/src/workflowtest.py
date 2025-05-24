@@ -1,5 +1,4 @@
 from src.workflow import Workflow
-from src.workflow import Workflow
 from src.node     import ReadCSVNode, JoinNode
 
 

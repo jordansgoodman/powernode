@@ -1,7 +1,6 @@
 import uuid 
 import os 
 import datetime
-from src.node import Node
 import shutil
 
 class Workflow:

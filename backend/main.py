@@ -1,5 +1,4 @@
 # backend/main.py
-from src.api import app
 import uvicorn
 
 if __name__ == "__main__":
