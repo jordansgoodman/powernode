@@ -6,7 +6,7 @@ import shutil
 
 
 class Node:
-
+    """Nodes are intialized through Workflows."""
     def __init__(self, name, workflow_path):
         self.id = str(uuid.uuid4())
         self.name = name
