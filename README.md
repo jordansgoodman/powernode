@@ -43,18 +43,6 @@ cd ../frontend
 npm install
 npm run dev
 
-
-## Project Structure
-
-powernode/
-├── backend/       # FastAPI + Polars engine
-│   ├── src/
-│   ├── data/      # Input files and logs
-│   └── main.py    # API entry point
-├── frontend/      # React + Tailwind UI
-└── testdataset/   # Sample CSVs for testing
-
-
 ## Example Workflow
 
 Create a new workflow
