@@ -62,48 +62,8 @@ code, msg = safe_post(f"/workflow/{WORKFLOW_NAME}/join_node", {
 print("Add JoinNode:", code, msg)
 line()
 
-# Run entire workflow
-code, msg = safe_post(f"/workflow/{WORKFLOW_NAME}/run")
-print("Run workflow:", code, msg)
-line()
+# filter node
 
-# Run a specific node
-code, msg = safe_post(f"/workflow/{WORKFLOW_NAME}/nodes/join_sales_features/run")
-print("Run single node (join_sales_features):", code, msg)
-line()
-
-
-# Preview a node output
-code, msg = safe_get(f"/workflow/{WORKFLOW_NAME}/nodes/join_sales_features/preview", params={"limit": 5})
-print("Preview output:", code)
-for row in msg:
-    print(row)
-line()
-
-# List all workflows
-code, msg = safe_get("/workflows")
-print("List all workflows:", code)
-for wf in msg:
-    print(wf)
-line()
-
-# List nodes in workflow
-
-code, msg = safe_get(f"/workflow/{WORKFLOW_NAME}/nodes")
-print("List nodes in workflow:", code)
-for node in msg:
-    print(node)
-line()
-
-# Export workflow metadata
-code, msg = safe_get(f"/workflow/{WORKFLOW_NAME}/export")
-print("Export metadata:", code)
-print(msg)
-line()
-
-# filter
-
-#todo: add abstract filter logic - detect columns 
 code, msg = safe_post(f"/workflow/{WORKFLOW_NAME}/filter_node", {
     "name": "filter_holidays",
     "input_table": "join_sales_features",
@@ -112,5 +72,8 @@ code, msg = safe_post(f"/workflow/{WORKFLOW_NAME}/filter_node", {
 print("Add FilterNode:", code, msg)
 
 
-
+# Run entire workflow
+code, msg = safe_post(f"/workflow/{WORKFLOW_NAME}/run")
+print("Run workflow:", code, msg)
+line()
 

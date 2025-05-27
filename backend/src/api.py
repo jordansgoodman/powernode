@@ -136,6 +136,13 @@ def add_join_node(workflow_name: str, req: AddJoinNodeRequest):
                 right_table=req.right_table,
                 on=req.on,
                 how=req.how)
+    
+    register_action(
+        action="add_join_node",
+        workflow=wf.name,
+        payload=req.dict()
+    )
+
     return {"message": f"JoinNode '{req.name}' added"}
 
 @app.post("/workflow/{workflow_name}/run")
@@ -155,6 +162,7 @@ def run_workflow(workflow_name: str):
 
     if all(n.status == "completed" for n in wf.nodes):
         wf.completed_at = datetime.datetime.now()
+
 
     return {
         "message": "Workflow executed",
@@ -246,4 +254,12 @@ def add_filter_node(workflow_name: str, req: AddFilterNodeRequest):
         input_table=req.input_table,
         filter_expr=expr
     )
+
+        
+    register_action(
+        action="add_filter_node",
+        workflow=wf.name,
+        payload=req.dict()
+    )
+
     return {"message": f"FilterNode '{req.name}' added"}
