@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>PowerNode Desktop</title>
+</head>
+<body>
+  <h1>PowerNode</h1>
+
+  <div>
+    <h2>Create Workflow</h2>
+    <input id="workflow-name" placeholder="Workflow name" />
+    <button onclick="createWorkflow()">Create</button>
+  </div>
+
+  <div>
+    <h2>Existing Workflows</h2>
+    <ul id="workflow-list"></ul>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:8000';
+
+    async function createWorkflow() {
+      const name = document.getElementById('workflow-name').value;
+      if (!name) return alert("Enter a name.");
+      const res = await fetch(`${API_URL}/workflow`, {  // <- FIXED
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name })
+      });
+      if (res.ok) {
+        alert("Workflow created");
+        loadWorkflows();
+      } else {
+        alert("Error creating workflow");
+      }
+    }
+
+    async function runWorkflow(name) {
+      const res = await fetch(`${API_URL}/workflow/${name}/run`);
+      const json = await res.json();
+      alert("Ran workflow:\n" + JSON.stringify(json, null, 2));
+    }
+
+    async function loadWorkflows() {
+      const res = await fetch(`${API_URL}/workflows`);
+      const workflows = await res.json();
+      const list = document.getElementById('workflow-list');
+      list.innerHTML = '';
+      workflows.forEach(wf => {
+        const li = document.createElement('li');
+        li.innerHTML = `${wf.name} <button onclick="runWorkflow('${wf.name}')">Run</button>`;
+        list.appendChild(li);
+      });
+    }
+
+    loadWorkflows();
+  </script>
+</body>
+</html>
