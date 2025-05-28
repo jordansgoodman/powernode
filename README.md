@@ -36,14 +36,6 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-# In another terminal: set up frontend
-
-```bash
-cd ../frontend
-npm install
-npm run dev
-```
-
 ## Example Workflow
 
 1. Create a new workflow
